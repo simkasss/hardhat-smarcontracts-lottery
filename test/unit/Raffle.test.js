@@ -178,8 +178,8 @@ const {
 
                 const raffleState = await raffle.getRaffleState();
                 const endingTimeStamp = await raffle.getLatestTimeStamp();
-                const winnerEndingBalance = await accounts[1].getBalance();
-                assert.equal(recentWinner.toString(), accounts[1].address);
+                const winnerEndingBalance = await accounts[2].getBalance();
+                assert.equal(recentWinner.toString(), accounts[2].address);
                 assert.equal(raffleState, 0);
                 assert.equal(
                   winnerEndingBalance.toString(),
@@ -197,9 +197,9 @@ const {
                 reject(e);
               }
             });
-            const tx = await raffle.permormUpkeep([]);
+            const tx = await raffle.performUpkeep([]);
             const txReceipt = await tx.wait(1);
-            const winnerStartingBalance = await accounts[1].getBalance();
+            const winnerStartingBalance = await accounts[2].getBalance();
             await vrfCoordinatorV2Mock.fulfillRandomWords(
               txReceipt.events[1].args.requestId,
               raffle.address
