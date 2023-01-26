@@ -35,7 +35,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   const entranceFee = networkConfig[chainId]["entranceFee"];
   const gasLane = networkConfig[chainId]["gasLane"];
   const callbackGasLimit = networkConfig[chainId]["callbackGasLimit"];
-  const interval = networkConfig[chainId]["interval"];
+  const interval = 60 * 60 * 24 * 30; // 30 days in seconds // 60sec * 60min * 24h * 30 days
 
   const args = [
     vrfCoordinatorV2Address,

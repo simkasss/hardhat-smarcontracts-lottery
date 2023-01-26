@@ -28,6 +28,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
     uint256 private immutable i_entranceFee;
     address payable[] private s_players;
+    mapping(address => uint256) private playerToFundedAmount;
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
     bytes32 private immutable i_gasLine;
     uint64 private immutable i_subscriptionId;
@@ -70,6 +71,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
             revert Raffle__NotOpen();
         }
         s_players.push(payable(msg.sender));
+        playerToFundedAmount[msg.sender] += msg.value;
 
         emit RaffleEnter(msg.sender);
     }
@@ -92,6 +94,18 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
             timePassed &&
             hasPlayers &&
             hasBalance); /* this will be true or false*/
+
+        if (timePassed && !upkeepNeeded) {
+            for (uint i = 0; i < s_players.length; i++) {
+                uint256 balance = playerToFundedAmount[msg.sender];
+                playerToFundedAmount[msg.sender] = 0;
+                (bool success, ) = s_players[i].call{value: balance}("");
+                if (!success) {
+                    revert Raffle__TransferFailed();
+                }
+                s_players = new address payable[](0);
+            }
+        }
     }
 
     // if checkUpkeep returns true, this function gets executed (Chainlink nodes automatically calls it)
