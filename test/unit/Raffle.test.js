@@ -46,7 +46,13 @@ const {
           ).to.emit(raffle, "RaffleEnter");
         });
         it("doesnt allow entrance when raffle is calculating", async function () {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           // evm_increaseTime is a hardhat special testing method that increases time as we specify
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
@@ -72,7 +78,13 @@ const {
           assert(!upkeepNeeded);
         });
         it("returns false if raffle isnt open", async function () {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
@@ -93,7 +105,13 @@ const {
           assert(!upkeepNeeded);
         });
         it("returns true if enough time has passed, has players, eth, and is open", async function () {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
@@ -104,7 +122,13 @@ const {
       });
       describe("performUpkeep", function () {
         it("it can only run if checkupkeep is true", async function () {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
@@ -118,7 +142,13 @@ const {
           );
         });
         it("updates the raffle state, emits event and calls the vrf coordinator", async function () {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
