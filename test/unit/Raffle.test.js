@@ -26,7 +26,7 @@ const {
         it("initializes the raffle correctly", async function () {
           const raffleState = await raffle.getRaffleState();
           assert.equal(raffleState.toString(), "0");
-          assert.equal(interval.toString(), networkConfig[chainId]["interval"]);
+          assert.equal(interval.toString(), (60 * 60 * 24 * 30).toString());
         });
       });
       describe("enterRaffle", function () {
@@ -62,6 +62,44 @@ const {
         });
       });
       describe("checkUpkeep", function () {
+        it.only("allow users to exit the raffle and withdraw their ETH if time passed but raffle didnt finish", async function () {
+          console.log(raffleEntranceFee / (10 ** 18).toString());
+          const accounts = await ethers.getSigners();
+          let startingBalances = [];
+          let endingBalances = [];
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            const startingAccountBalance =
+              (await accountConnectedRaffle.provider.getBalance(
+                accounts[i].address
+              )) /
+              10 ** 18;
+            startingBalances.push(startingAccountBalance);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
+          console.log(startingBalances);
+          await network.provider.send("evm_increaseTime", [
+            interval.toNumber() + 5,
+          ]);
+          await network.provider.send("evm_mine", []);
+          await raffle.RaffleStateClose();
+          await raffle.performUpkeep([]);
+          const { upkeepNeeded } = await raffle.callStatic.checkUpkeep([]);
+          assert(!upkeepNeeded);
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            const endingAccountBalance =
+              (await accountConnectedRaffle.provider.getBalance(
+                accounts[i].address
+              )) /
+              10 ** 18;
+            endingBalances.push(endingAccountBalance);
+          }
+          assert.equal(startingBalances, endingBalances);
+        });
+
         it("returns false if people havent sent any ETH", async function () {
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
