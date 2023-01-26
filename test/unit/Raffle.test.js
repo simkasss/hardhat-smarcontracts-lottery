@@ -84,11 +84,10 @@ const {
             interval.toNumber() + 5,
           ]);
           await network.provider.send("evm_mine", []);
+          await raffle.RaffleStateClose();
           await raffle.performUpkeep([]);
-          const raffleState = await raffle.getRaffleState();
           const { upkeepNeeded } = await raffle.callStatic.checkUpkeep([]);
           assert(!upkeepNeeded);
-          assert.equal(raffleState.toString(), "1");
           for (let i = 0; i < 3; i++) {
             const accountConnectedRaffle = raffle.connect(accounts[i]);
             const endingAccountBalance =

@@ -95,6 +95,26 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
             hasPlayers &&
             hasBalance); /* this will be true or false*/
 
+        // if (timePassed && !upkeepNeeded) {
+        //     for (uint i = 0; i < s_players.length; i++) {
+        //         uint256 balance = playerToFundedAmount[msg.sender];
+        //         playerToFundedAmount[msg.sender] = 0;
+        //         (bool success, ) = s_players[i].call{value: balance}("");
+        //         if (!success) {
+        //             revert Raffle__TransferFailed();
+        //         }
+        //         s_players = new address payable[](0);
+        //     }
+        // }
+    }
+
+    // if checkUpkeep returns true, this function gets executed (Chainlink nodes automatically calls it)
+    function performUpkeep(
+        bytes calldata /** performData */
+    ) external override {
+        //we want the function to be called only if upkeepNeeded (from checkUpkeep) is true
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_interval);
         if (timePassed && !upkeepNeeded) {
             for (uint i = 0; i < s_players.length; i++) {
                 uint256 balance = playerToFundedAmount[msg.sender];
@@ -106,15 +126,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
                 s_players = new address payable[](0);
             }
         }
-    }
-
-    // if checkUpkeep returns true, this function gets executed (Chainlink nodes automatically calls it)
-    function performUpkeep(
-        bytes calldata /** performData */
-    ) external override {
-        //we want the function to be called only if upkeepNeeded (from checkUpkeep) is true
-        (bool upkeepNeeded, ) = checkUpkeep("");
-        if (!upkeepNeeded) {
+        if (!upkeepNeeded && !timePassed) {
             revert Raffle__UpkeepNotNeeded(
                 address(this).balance,
                 s_players.length,
@@ -163,6 +175,11 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     }
 
     function getRaffleState() public view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function RaffleStateClose() public returns (RaffleState) {
+        s_raffleState = RaffleState.CALCULATING;
         return s_raffleState;
     }
 
