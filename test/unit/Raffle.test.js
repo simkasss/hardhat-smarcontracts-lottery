@@ -173,6 +173,7 @@ const {
                 const winnerBalance = await accounts[2].getBalance();
                 const endingTimeStamp = await raffle.getLatestTimeStamp();
                 await expect(raffle.getPlayer(0)).to.be.reverted;
+
                 assert.equal(recentWinner.toString(), accounts[2].address);
                 assert.equal(raffleState, 0);
                 assert.equal(
@@ -191,11 +192,11 @@ const {
                 reject(e); // if try fails, rejects the promise
               }
             });
-
             // kicking off the event by mocking the chainlink keepers and vrf coordinator
             const tx = await raffle.performUpkeep("0x");
             const txReceipt = await tx.wait(1);
             const startingBalance = await accounts[2].getBalance();
+
             await vrfCoordinatorV2Mock.fulfillRandomWords(
               txReceipt.events[1].args.requestId,
               raffle.address

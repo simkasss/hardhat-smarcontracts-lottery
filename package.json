@@ -1,4 +1,13 @@
 {
+  "scripts": {
+    "test": "yarn hardhat test",
+    "test-staging": "yarn hardhat test --network goerli",
+    "lint": "yarn solhint 'contracts/*.sol'",
+    "lint:fix": "yarn solhint 'contracts/**/*.sol' --fix",
+    "format": "yarn prettier --write .",
+    "coverage": "yarn hardhat coverage"
+  },
+  "license": "MIT",
   "devDependencies": {
     "@chainlink/contracts": "0.4.1",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.7",

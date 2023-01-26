@@ -4,7 +4,7 @@ const { developmentChains } = require("../../helper-hardhat-config");
 
 developmentChains.includes(network.name)
   ? describe.skip
-  : describe("Raffle Unit Tests", function () {
+  : describe("Raffle Staging Test", function () {
       let raffle, raffleEntranceFee, deployer;
 
       beforeEach(async function () {
@@ -20,7 +20,7 @@ developmentChains.includes(network.name)
           // we need to setup listener before we enter the raffle
           await new Promise(async (resolve, reject) => {
             raffle.once("WinnerPicked", async () => {
-              console.log("WinnePicked event fired");
+              console.log("WinnerPicked event fired");
               try {
                 const recentWinner = await raffle.getRecentWinner();
                 const raffleState = await raffle.getRaffleState();
