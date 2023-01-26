@@ -32,7 +32,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     vrfCoordinatorV2Address = networkConfig[chainId]["vrfCoordinatorV2"];
     subscriptionId = networkConfig[chainId]["subscriptionId"];
   }
-  const entranceFee = networkConfig[chainId]["entranceFee"];
+  const entranceFee = ethers.utils.parseEther("0.001");
   const gasLane = networkConfig[chainId]["gasLane"];
   const callbackGasLimit = networkConfig[chainId]["callbackGasLimit"];
   const interval = networkConfig[chainId]["interval"];

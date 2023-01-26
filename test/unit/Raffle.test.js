@@ -30,10 +30,10 @@ const {
         });
       });
       describe("enterRaffle", function () {
-        it("reverts when you dont pay enough", async function () {
-          await expect(raffle.enterRaffle()).to.be.revertedWith(
-            "Raffle__NotEnoughETHEntered"
-          );
+        it("reverts when you dont pay right amount", async function () {
+          await expect(
+            raffle.enterRaffle({ value: ethers.utils.parseEther("1") })
+          ).to.be.revertedWith("Raffle__NotCorrectAmountOfETH");
         });
         it("records players when they enter", async function () {
           await raffle.enterRaffle({ value: raffleEntranceFee });
