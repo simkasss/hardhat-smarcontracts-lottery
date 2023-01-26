@@ -86,11 +86,11 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         // all defined bools have to be true for upkeepNeeded to be true
         bool isOpen = (RaffleState.OPEN == s_raffleState);
         bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_interval); //block.timestamp is global variable that returns current timestamp
-        bool hasPlayers = (s_players.length > 0);
+        bool hasEnoughPlayers = (s_players.length >= 3);
         bool hasBalance = address(this).balance > 0;
         upkeepNeeded = (isOpen &&
             timePassed &&
-            hasPlayers &&
+            hasEnoughPlayers &&
             hasBalance); /* this will be true or false*/
     }
 
