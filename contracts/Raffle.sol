@@ -5,7 +5,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol"; // from this we get checkUpkeep and performUpkeep
 
-error Raffle__NotEnoughETHEntered();
+error Raffle__NotCorrectAmountOfETH();
 error Raffle__TransferFailed();
 error Raffle__NotOpen();
 error Raffle__UpkeepNotNeeded(
@@ -63,8 +63,8 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     }
 
     function enterRaffle() public payable {
-        if (msg.value < i_entranceFee) {
-            revert Raffle__NotEnoughETHEntered();
+        if (msg.value != i_entranceFee) {
+            revert Raffle__NotCorrectAmountOfETH();
         }
         if (s_raffleState != RaffleState.OPEN) {
             revert Raffle__NotOpen();
