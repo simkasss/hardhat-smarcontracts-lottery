@@ -70,7 +70,7 @@ const {
           let startingBalances = [];
           let endingBalances = [];
           let balancesAfterEnter = [];
-          for (let i = 0; i < 3; i++) {
+          for (let i = 0; i < 10000; i++) {
             const accountConnectedRaffle = raffle.connect(accounts[i]);
             const startingAccountBalance =
               (await accountConnectedRaffle.provider.getBalance(
@@ -88,8 +88,8 @@ const {
               10 ** 18;
             balancesAfterEnter.push(Math.ceil(afterEnterAccountBalance));
           }
-          console.log(`Starting balances: ${startingBalances}`);
-          console.log(`Balances after enter: ${balancesAfterEnter}`);
+          //console.log(`Starting balances: ${startingBalances}`);
+          //console.log(`Balances after enter: ${balancesAfterEnter}`);
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 5,
           ]);
@@ -99,7 +99,7 @@ const {
           assert(!upkeepNeeded);
           assert(raffleState, "CLOSE");
           await raffle.performUpkeep([]);
-          for (let i = 0; i < 3; i++) {
+          for (let i = 0; i < 10000; i++) {
             const accountConnectedRaffle = raffle.connect(accounts[i]);
             const endingAccountBalance =
               (await accountConnectedRaffle.provider.getBalance(
@@ -108,7 +108,7 @@ const {
               10 ** 18;
             endingBalances.push(Math.round(endingAccountBalance));
           }
-          console.log(`Ending balances: ${endingBalances}`);
+          //console.log(`Ending balances: ${endingBalances}`);
           assert.deepEqual(startingBalances, endingBalances); //WHY NOT EQUAL?
         });
 
