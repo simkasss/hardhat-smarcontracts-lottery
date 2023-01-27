@@ -30,10 +30,7 @@ const {
         it("initializes the raffle correctly", async () => {
           const raffleState = (await raffle.getRaffleState()).toString();
           assert.equal(raffleState, "0");
-          assert.equal(
-            interval.toString(),
-            networkConfig[network.config.chainId]["interval"]
-          );
+          assert.equal(interval.toString(), (60 * 60 * 24 * 30).toString());
         });
       });
 
@@ -54,7 +51,13 @@ const {
           ).to.emit(raffle, "RaffleEnter");
         });
         it("doesn't allow entrance when raffle is calculating", async () => {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
@@ -63,6 +66,65 @@ const {
           await expect(
             raffle.enterRaffle({ value: raffleEntranceFee })
           ).to.be.revertedWith("Raffle__NotOpen");
+        });
+      });
+      describe("exitRaffle", function () {
+        it.only("allows exit the raffle if 30 days have passed but raffle doesnt have enough players", async () => {
+          const startingAccountBalance =
+            (await raffle.provider.getBalance(deployer.address)) / 10 ** 18;
+          console.log(
+            `First players balance before enter: ${Math.round(
+              startingAccountBalance
+            )}`
+          );
+          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const indexOfFirstPlayer = await raffle.getPlayerIndex(
+            deployer.address
+          );
+          const afterEnterAccountBalance =
+            (await raffle.provider.getBalance(deployer.address)) / 10 ** 18;
+          console.log(
+            `First players balance after enter: ${Math.round(
+              afterEnterAccountBalance
+            )}`
+          );
+          const accountConnectedRaffle = raffle.connect(accounts[1]);
+          await accountConnectedRaffle.enterRaffle({
+            value: raffleEntranceFee,
+          });
+          const indexOfSecondPlayer = await raffle.getPlayerIndex(
+            accounts[1].address
+          );
+          const numberOfPlayers = await raffle.getNumberOfPlayers();
+          console.log(
+            `Index of first player: ${indexOfFirstPlayer.toString()}`
+          );
+          console.log(
+            `Index of second player: ${indexOfSecondPlayer.toString()}`
+          );
+          console.log(`Number of players: ${numberOfPlayers}`);
+          await network.provider.send("evm_increaseTime", [
+            interval.toNumber() + 1,
+          ]);
+          await network.provider.request({ method: "evm_mine", params: [] });
+          await raffle.exitRaffle();
+          const afterExitAccountBalance =
+            (await raffle.provider.getBalance(deployer.address)) / 10 ** 18;
+          const numberOfPlayersAfterExit = await raffle.getNumberOfPlayers();
+          console.log(
+            `Number of players after first exits: ${numberOfPlayersAfterExit}`
+          );
+          console.log(
+            `First players balance after exit: ${Math.round(
+              afterExitAccountBalance
+            )}`
+          );
+          assert.equal(
+            Math.round(startingAccountBalance),
+            Math.round(afterExitAccountBalance)
+          );
+          assert.equal(numberOfPlayers, 2);
+          assert.equal(numberOfPlayersAfterExit, 1);
         });
       });
       describe("checkUpkeep", function () {
@@ -75,7 +137,13 @@ const {
           assert(!upkeepNeeded);
         });
         it("returns false if raffle isn't open", async () => {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
@@ -95,7 +163,13 @@ const {
           assert(!upkeepNeeded);
         });
         it("returns true if enough time has passed, has players, eth, and is open", async () => {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
@@ -107,7 +181,13 @@ const {
 
       describe("performUpkeep", function () {
         it("can only run if checkupkeep is true", async () => {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
@@ -120,8 +200,14 @@ const {
             "Raffle__UpkeepNotNeeded"
           );
         });
-        it("updates the raffle state and emits a requestId", async () => {
-          await raffle.enterRaffle({ value: raffleEntranceFee });
+        it("updates the raffle state, emits event and calls the vrf coordinator", async () => {
+          const accounts = await ethers.getSigners();
+          for (let i = 0; i < 3; i++) {
+            const accountConnectedRaffle = raffle.connect(accounts[i]);
+            await accountConnectedRaffle.enterRaffle({
+              value: raffleEntranceFee,
+            });
+          }
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 1,
           ]);
