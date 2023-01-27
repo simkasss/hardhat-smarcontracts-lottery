@@ -19,6 +19,7 @@ module.exports = {
     hardhat: {
       chainId: 31337,
       blockConfirmations: 1,
+      accounts: { count: 10000 },
     },
     goerli: {
       chainId: 5,
