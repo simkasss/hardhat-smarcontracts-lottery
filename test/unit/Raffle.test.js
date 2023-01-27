@@ -63,10 +63,13 @@ const {
       });
       describe("checkUpkeep", function () {
         it.only("allow users to exit the raffle and withdraw their ETH if time passed but raffle didnt finish", async function () {
-          console.log(raffleEntranceFee / (10 ** 18).toString());
+          console.log(
+            `Enter Fee: ${raffleEntranceFee / (10 ** 18).toString()}`
+          );
           const accounts = await ethers.getSigners();
           let startingBalances = [];
           let endingBalances = [];
+          let balancesAfterEnter = [];
           for (let i = 0; i < 3; i++) {
             const accountConnectedRaffle = raffle.connect(accounts[i]);
             const startingAccountBalance =
@@ -74,20 +77,28 @@ const {
                 accounts[i].address
               )) /
               10 ** 18;
-            startingBalances.push(startingAccountBalance);
+            startingBalances.push(Math.round(startingAccountBalance));
             await accountConnectedRaffle.enterRaffle({
               value: raffleEntranceFee,
             });
+            const afterEnterAccountBalance =
+              (await accountConnectedRaffle.provider.getBalance(
+                accounts[i].address
+              )) /
+              10 ** 18;
+            balancesAfterEnter.push(Math.ceil(afterEnterAccountBalance));
           }
-          console.log(startingBalances);
+          console.log(`Starting balances: ${startingBalances}`);
+          console.log(`Balances after enter: ${balancesAfterEnter}`);
           await network.provider.send("evm_increaseTime", [
             interval.toNumber() + 5,
           ]);
           await network.provider.send("evm_mine", []);
-          await raffle.RaffleStateClose();
-          await raffle.performUpkeep([]);
+          const raffleState = await raffle.RaffleStateClose();
           const { upkeepNeeded } = await raffle.callStatic.checkUpkeep([]);
           assert(!upkeepNeeded);
+          assert(raffleState, "CLOSE");
+          await raffle.performUpkeep([]);
           for (let i = 0; i < 3; i++) {
             const accountConnectedRaffle = raffle.connect(accounts[i]);
             const endingAccountBalance =
@@ -95,9 +106,10 @@ const {
                 accounts[i].address
               )) /
               10 ** 18;
-            endingBalances.push(endingAccountBalance);
+            endingBalances.push(Math.round(endingAccountBalance));
           }
-          assert.equal(startingBalances, endingBalances);
+          console.log(`Ending balances: ${endingBalances}`);
+          assert.deepEqual(startingBalances, endingBalances); //WHY NOT EQUAL?
         });
 
         it("returns false if people havent sent any ETH", async function () {

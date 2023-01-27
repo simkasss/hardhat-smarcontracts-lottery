@@ -23,7 +23,8 @@ error Raffle__UpkeepNotNeeded(
 contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     enum RaffleState {
         OPEN,
-        CALCULATING
+        CALCULATING,
+        CLOSE
     }
 
     uint256 private immutable i_entranceFee;
@@ -94,18 +95,6 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
             timePassed &&
             hasPlayers &&
             hasBalance); /* this will be true or false*/
-
-        // if (timePassed && !upkeepNeeded) {
-        //     for (uint i = 0; i < s_players.length; i++) {
-        //         uint256 balance = playerToFundedAmount[msg.sender];
-        //         playerToFundedAmount[msg.sender] = 0;
-        //         (bool success, ) = s_players[i].call{value: balance}("");
-        //         if (!success) {
-        //             revert Raffle__TransferFailed();
-        //         }
-        //         s_players = new address payable[](0);
-        //     }
-        // }
     }
 
     // if checkUpkeep returns true, this function gets executed (Chainlink nodes automatically calls it)
@@ -115,16 +104,18 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         //we want the function to be called only if upkeepNeeded (from checkUpkeep) is true
         (bool upkeepNeeded, ) = checkUpkeep("");
         bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_interval);
+
         if (timePassed && !upkeepNeeded) {
-            for (uint i = 0; i < s_players.length; i++) {
-                uint256 balance = playerToFundedAmount[msg.sender];
-                playerToFundedAmount[msg.sender] = 0;
+            for (uint256 i = 0; i < s_players.length; i++) {
+                address player = s_players[i];
+                uint256 balance = playerToFundedAmount[player];
+                playerToFundedAmount[player] = 0;
                 (bool success, ) = s_players[i].call{value: balance}("");
                 if (!success) {
                     revert Raffle__TransferFailed();
                 }
-                s_players = new address payable[](0);
             }
+            s_players = new address payable[](0);
         }
         if (!upkeepNeeded && !timePassed) {
             revert Raffle__UpkeepNotNeeded(
@@ -179,7 +170,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     }
 
     function RaffleStateClose() public returns (RaffleState) {
-        s_raffleState = RaffleState.CALCULATING;
+        s_raffleState = RaffleState.CLOSE;
         return s_raffleState;
     }
 
