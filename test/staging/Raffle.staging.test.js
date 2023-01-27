@@ -29,7 +29,7 @@ developmentChains.includes(network.name)
 
                 await expect(raffle.getPlayer(0)).to.be.reverted;
                 assert.equal(recentWinner.toString(), accounts[0].address);
-                assert.equal(raffleState.toString(), "0");
+                assert.equal(raffleState, 0);
                 assert.equal(
                   winnerEndingBalance.toString(),
                   winnerStartingBalance.add(raffleEntranceFee).toString()
@@ -42,7 +42,8 @@ developmentChains.includes(network.name)
               }
             });
             // enter the raffle
-            await raffle.enterRaffle({ value: raffleEntranceFee });
+            const tx = await raffle.enterRaffle({ value: raffleEntranceFee });
+            await tx.wait(1);
             const winnerStartingBalance = await accounts[0].getBalance();
             // code wont complete until our listener has finished listening
           });
