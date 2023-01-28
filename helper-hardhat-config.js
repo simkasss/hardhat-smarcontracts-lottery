@@ -12,7 +12,7 @@ const networkConfig = {
     interval: "30",
   },
   31337: {
-    name: "hardhat",
+    name: "localhost",
     subscriptionId: "558",
     entranceFee: ethers.utils.parseEther("0.01"),
     gasLane:

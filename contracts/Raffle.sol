@@ -3,7 +3,8 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol"; // from this we get checkUpkeep and performUpkeep
+//import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol"; // from this we get checkUpkeep and performUpkeep
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
 error Raffle__NotEnoughETHEntered();
 error Raffle__TransferFailed();
@@ -20,7 +21,7 @@ error Raffle__UpkeepNotNeeded(
  * @dev This implements Chainlink VRF v2 and Chainlink Keepers
  */
 
-contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
+contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     enum RaffleState {
         OPEN,
         CALCULATING
@@ -80,6 +81,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         bytes memory /*checkData*/
     )
         public
+        view
         override
         returns (bool upkeepNeeded, bytes memory /* performData */)
     {
@@ -92,6 +94,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
             timePassed &&
             hasPlayers &&
             hasBalance); /* this will be true or false*/
+        return (upkeepNeeded, "0x0");
     }
 
     // if checkUpkeep returns true, this function gets executed (Chainlink nodes automatically calls it)
