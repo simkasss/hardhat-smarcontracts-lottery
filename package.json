@@ -5,7 +5,8 @@
     "lint": "yarn solhint 'contracts/*.sol'",
     "lint:fix": "yarn solhint 'contracts/**/*.sol' --fix",
     "format": "yarn prettier --write .",
-    "coverage": "yarn hardhat coverage"
+    "coverage": "yarn hardhat coverage",
+    "build": "webpack --config webpack.dev.js"
   },
   "license": "MIT",
   "devDependencies": {
